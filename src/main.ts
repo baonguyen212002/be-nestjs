@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { AppModule } from './app.module';
 
@@ -25,6 +26,23 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  // Swagger / OpenAPI docs at /docs (with a persistent "Authorize" bearer field).
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('E-commerce API')
+    .setDescription(
+      'API cho frontend — Auth, Products, Categories, Brands, Carts, Orders, Uploads.',
+    )
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token',
+    )
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: { persistAuthorization: true },
+  });
+
   const config = app.get(ConfigService);
   await app.listen(config.get<number>('app.port') ?? 3000);
 }

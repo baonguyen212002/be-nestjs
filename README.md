@@ -1,98 +1,166 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🛒 E-commerce Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+REST API cho ứng dụng thương mại điện tử, xây dựng bằng **NestJS 11 + MongoDB (Mongoose)**.
+Bao gồm xác thực JWT, quản lý sản phẩm/danh mục/thương hiệu, giỏ hàng, đặt hàng, hồ sơ người dùng và upload ảnh. Tài liệu API tương tác qua **Swagger**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 1. Yêu cầu môi trường
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+| Công cụ  | Phiên bản khuyến nghị |
+| -------- | --------------------- |
+| Node.js  | ≥ 18                  |
+| npm      | ≥ 9                   |
+| MongoDB  | ≥ 6 (local hoặc Atlas) |
 
-## Project setup
+Kiểm tra nhanh:
 
 ```bash
-$ npm install
+node -v
+npm -v
 ```
 
-## Compile and run the project
+---
+
+## 2. Cài đặt
 
 ```bash
-# development
-$ npm run start
+# 1. Cài dependencies
+npm install
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# 2. Tạo file .env từ mẫu
+cp .env.example .env       # Windows PowerShell: Copy-Item .env.example .env
 ```
 
-## Run tests
+Sau đó mở `.env` và điền giá trị thật (xem mục dưới).
+
+---
+
+## 3. Cấu hình `.env`
+
+| Biến | Bắt buộc | Mô tả |
+| ---- | :------: | ----- |
+| `MONGODB_URI` | ✅ | Chuỗi kết nối MongoDB, vd `mongodb://localhost:27017/ecommerce` |
+| `JWT_ACCESS_SECRET` | ✅ | Secret ký access token |
+| `JWT_REFRESH_SECRET` | ✅ | Secret ký refresh token (khác access) |
+| `JWT_ACCESS_EXPIRES_IN` | | Hạn access token (mặc định `15m`) |
+| `JWT_REFRESH_EXPIRES_IN` | | Hạn refresh token (mặc định `7d`) |
+| `JWT_REFRESH_REMEMBER_EXPIRES_IN` | | Hạn refresh khi "remember me" (mặc định `30d`) |
+| `PORT` | | Cổng chạy app (mặc định `3000`) |
+| `APP_URL` | | URL backend, dùng trong email verify/reset |
+| `FRONTEND_URL` | | URL frontend |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | | Tài khoản admin được seed tự động khi khởi động |
+| `SMTP_*`, `MAIL_FROM` | | Cấu hình gửi mail. **Để trống `SMTP_HOST` ở môi trường dev** → link verify/reset sẽ được in ra console thay vì gửi email |
+
+Sinh secret ngẫu nhiên mạnh:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 4. Chạy project
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Dev (tự reload khi đổi code) — khuyên dùng khi phát triển
+npm run start:dev
+
+# Chạy thường
+npm run start
+
+# Production (cần build trước)
+npm run build
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Mặc định app chạy tại **http://localhost:3000**.
 
-## Resources
+> **Tài khoản admin**: khi khởi động lần đầu, hệ thống tự tạo admin từ `ADMIN_EMAIL` / `ADMIN_PASSWORD` (tài khoản này đã được xác thực sẵn, đăng nhập dùng được ngay).
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 5. Tài liệu API (Swagger)
 
-## Support
+Sau khi chạy app, mở:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
+http://localhost:3000/docs
+```
 
-## Stay in touch
+Cách test endpoint cần đăng nhập:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+1. Gọi `POST /auth/login` để lấy `accessToken`.
+2. Bấm nút **Authorize** (góc phải trên), dán token vào → mọi request có ổ khóa sẽ tự gắn header `Authorization: Bearer <token>`.
+3. Bấm **Try it out** trên endpoint để gọi thử.
 
-## License
+Token được lưu lại kể cả khi refresh trang.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## 6. Tổng quan các module
+
+| Nhóm | Prefix | Ghi chú |
+| ---- | ------ | ------- |
+| **Auth** | `/auth` | Đăng ký, đăng nhập, refresh, logout, verify email, quên/đặt lại mật khẩu |
+| **Users** | `/users` | Hồ sơ cá nhân (`/users/me`); admin xem danh sách user |
+| **Products** | `/products` | Duyệt công khai; tạo/sửa/xóa cần quyền admin |
+| **Categories** | `/categories` | Danh mục sản phẩm |
+| **Brands** | `/brands` | Thương hiệu |
+| **Carts** | `/carts` | Giỏ hàng theo user (thêm/sửa/xóa item) |
+| **Orders** | `/orders` | Đặt hàng từ giỏ (`/orders/checkout`), xem/hủy đơn; admin quản lý trạng thái |
+| **Uploads** | `/upload/image` | Upload ảnh (multipart, field `file`); ảnh phục vụ tại `/uploads/<filename>` |
+
+**Phân quyền**: `PUBLIC` (không cần token) · `USER` (cần đăng nhập) · `ADMIN` (token có `role = admin`).
+
+---
+
+## 7. Chạy test
+
+```bash
+npm run test         # unit test
+npm run test:e2e     # end-to-end
+npm run test:cov     # coverage
+```
+
+---
+
+## 8. Lệnh hữu ích khác
+
+```bash
+npm run lint         # ESLint + Prettier (tự fix)
+npm run format       # Format code bằng Prettier
+```
+
+---
+
+## 9. Cấu trúc thư mục
+
+```
+src/
+├── config/            # Cấu hình (app, database, jwt, mail, admin)
+├── modules/
+│   ├── auth/          # Xác thực & phân quyền (JWT, guards, strategies)
+│   ├── users/         # Người dùng & hồ sơ (profile)
+│   ├── products/      # Sản phẩm
+│   ├── categories/    # Danh mục
+│   ├── brands/        # Thương hiệu
+│   ├── carts/         # Giỏ hàng
+│   ├── orders/        # Đơn hàng
+│   ├── uploads/       # Upload ảnh
+│   └── mail/          # Gửi email
+├── app.module.ts
+└── main.ts            # Bootstrap + cấu hình Swagger
+```
+
+---
+
+## 10. Xử lý sự cố
+
+| Triệu chứng | Nguyên nhân thường gặp |
+| ----------- | ---------------------- |
+| App không khởi động, lỗi kết nối DB | `MONGODB_URI` sai hoặc MongoDB chưa chạy |
+| Đăng nhập báo *"Please verify your email"* | Tài khoản chưa verify — dùng link in ở console (dev) hoặc tài khoản admin đã seed |
+| `401 Unauthorized` khi gọi API | Thiếu/sai header `Authorization: Bearer <token>` hoặc token hết hạn |
+| `403 Forbidden` | Endpoint yêu cầu quyền admin |
+| `400 Bad Request` khi gửi body | Có field không hợp lệ hoặc field lạ (API bật `whitelist` — chỉ nhận đúng field đã định nghĩa) |
